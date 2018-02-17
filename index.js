@@ -41,13 +41,5 @@ serial.connect(async function() {
     console.log("x", x_adjusted, "y", y_adjusted);
 
     mouse.plot(x_adjusted/x_max, y_adjusted/y_max)
-  }, 50)
-
-
-  //
-  // const top = topTilt + -bottomTilt;
-  // const bottom = 0;
-  // const right = rightTilt + -leftTilt;
-  // const left = 0;
-  // console.log(top, bottom, right, left);
+  }, 1)
 });

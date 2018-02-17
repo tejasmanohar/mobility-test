@@ -1,5 +1,5 @@
 var SerialPort = require('serialport');
-var portName = '/dev/cu.usbmodem1421';
+var portName = '/dev/tty.usbmodem1421';
 
 exports.connect = function start(f) {
   var port = SerialPort(portName, {
@@ -8,16 +8,21 @@ exports.connect = function start(f) {
 
   port.on('open', function() {
     console.log('port opened')
-    f()
   });
 
+  var done = false;
   port.on('data', function (data) {
+    if (!done) {
+      f()
+      done = true;
+    }
+
     buffer(data.toString());
   });
 }
 
 exports.getTilt = function() {
-  return currentTilt;
+  return Object.assign({}, currentTilt);
 }
 
 var buf = '';
@@ -33,22 +38,43 @@ function buffer(next) {
     if (char == ';') {
       var parts = buf.split(',');
       if (parts.length == 3) {
-        currentTilt = {
-          pitch: Number(parts[0]),
-          roll: Number(parts[1]),
-          yaw: Number(parts[2])
-        }
+        var pitch = Number(parts[0]);
+        var roll = Number(parts[1]);
+        var yaw = Number(parts[2]);
+
+        // if (pitch != 0) {
+          currentTilt.pitch = -pitch
+        // }
+
+        // if (roll != 0) {
+          currentTilt.roll = -roll;
+        // }
+
+        // if (yaw != 0) {
+          currentTilt.yaw = -yaw;
+        // }
+
+        // currentTilt = {
+        //   pitch: ,
+        //   roll: Number(parts[1]),
+        //   yaw: Number(parts[2])
+        // }
 
         if (Number.isNaN(currentTilt.pitch) || Number.isNaN(currentTilt.roll)
           || Number.isNaN(currentTilt.yaw)) {
           console.log('Found NaN', buf);
         }
+
+        // console.log(pitch, roll, yaw)
       }
 
       buf = '';
     } else if ('.-,0123456789'.indexOf(char) != -1) {
       buf += char;
     }
+    // else {
+    //   console.log('other char', char)
+    // }
   }
 }
 
